@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotes App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .app-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: #4285f4;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        
+        .quote-container {
+            padding: 30px 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .quote-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .quote-author {
+            font-style: italic;
+            font-size: 0.9rem;
+            text-align: right;
+            color: #777;
+        }
+        
+        .buttons {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+        
+        .btn-new {
+            background-color: #4285f4;
+            color: white;
+            margin-right: 8px;
+        }
+        
+        .btn-new:active {
+            background-color: #3367d6;
+        }
+        
+        .btn-copy {
+            background-color: #34a853;
+            color: white;
+        }
+        
+        .btn-copy:active {
+            background-color: #2e8b57;
+        }
+        
+        .copy-feedback {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .copy-feedback.show {
+            opacity: 1;
+        }
+        
+        /* Ensure the app is easily tappable for automation */
+        button {
+            min-height: 48px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            Daily Inspiration
+        </div>
+        <div class="quote-container">
+            <p class="quote-text" id="quote-text">Click "New Quote" to get inspired!</p>
+            <p class="quote-author" id="quote-author"></p>
+            <div class="copy-feedback" id="copy-feedback">Copied to clipboard!</div>
+        </div>
+        <div class="buttons">
+            <button class="btn btn-new" id="new-quote">New Quote</button>
+            <button class="btn btn-copy" id="copy-quote">Copy</button>
+        </div>
+    </div>
+
+    <script>
+        // Large array of motivational and life quotes
+        const quotes = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "Life is what happens when you're busy making other plans.", author: "John Lennon" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+            { text: "Success is not final, failure is not fatal: It is the courage to continue that counts.", author: "Winston Churchill" },
+            { text: "The purpose of our lives is to be happy.", author: "Dalai Lama" },
+            { text: "Get busy living or get busy dying.", author: "Stephen King" },
+            { text: "You only live once, but if you do it right, once is enough.", author: "Mae West" },
+            { text: "Many of life's failures are people who did not realize how close they were to success when they gave up.", author: "Thomas A. Edison" },
+            { text: "If you want to live a happy life, tie it to a goal, not to people or things.", author: "Albert Einstein" },
+            { text: "Your time is limited, don't waste it living someone else's life.", author: "Steve Jobs" },
+            { text: "Life is really simple, but we insist on making it complicated.", author: "Confucius" },
+            { text: "In three words I can sum up everything I've learned about life: it goes on.", author: "Robert Frost" },
+            { text: "The greatest glory in living lies not in never falling, but in rising every time we fall.", author: "Nelson Mandela" },
+            { text: "Life is either a daring adventure or nothing at all.", author: "Helen Keller" },
+            { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
+            { text: "If life were predictable it would cease to be life, and be without flavor.", author: "Eleanor Roosevelt" },
+            { text: "If you set your goals ridiculously high and it's a failure, you will fail above everyone else's success.", author: "James Cameron" },
+            { text: "When you reach the end of your rope, tie a knot in it and hang on.", author: "Franklin D. Roosevelt" },
+            { text: "Always remember that you are absolutely unique. Just like everyone else.", author: "Margaret Mead" },
+            { text: "Don't judge each day by the harvest you reap but by the seeds that you plant.", author: "Robert Louis Stevenson" },
+            { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+            { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+            { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
+            { text: "In this life we cannot do great things. We can only do small things with great love.", author: "Mother Teresa" },
+            { text: "You have within you right now, everything you need to deal with whatever the world can throw at you.", author: "Brian Tracy" },
+            { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+            { text: "The mind is everything. What you think you become.", author: "Buddha" },
+            { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
+            { text: "We can easily forgive a child who is afraid of the dark; the real tragedy of life is when men are afraid of the light.", author: "Plato" },
+            { text: "Nothing will work unless you do.", author: "Maya Angelou" },
+            { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "Thomas A. Edison" },
+            { text: "No matter what people tell you, words and ideas can change the world.", author: "Robin Williams" },
+            { text: "Twenty years from now you will be more disappointed by the things that you didn't do than by the ones you did do.", author: "Mark Twain" },
+            { text: "When one door of happiness closes, another opens; but often we look so long at the closed door that we do not see the one which has been opened for us.", author: "Helen Keller" },
+            { text: "Do what you can, with what you have, where you are.", author: "Theodore Roosevelt" },
+            { text: "If opportunity doesn't knock, build a door.", author: "Milton Berle" },
+            { text: "We must believe that we are gifted for something, and that this thing, at whatever cost, must be attained.", author: "Marie Curie" },
+            { text: "You must be the change you wish to see in the world.", author: "Mahatma Gandhi" },
+            { text: "Life is 10% what happens to me and 90% of how I react to it.", author: "Charles Swindoll" },
+            { text: "The two most important days in your life are the day you are born and the day you find out why.", author: "Mark Twain" },
+            { text: "It is never too late to be what you might have been.", author: "George Eliot" },
+            { text: "The question isn't who is going to let me; it's who is going to stop me.", author: "Ayn Rand" },
+            { text: "I alone cannot change the world, but I can cast a stone across the water to create many ripples.", author: "Mother Teresa" },
+            { text: "The best revenge is massive success.", author: "Frank Sinatra" },
+            { text: "Nothing is impossible, the word itself says, 'I'm possible!'", author: "Audrey Hepburn" },
+            { text: "To live is the rarest thing in the world. Most people exist, that is all.", author: "Oscar Wilde" },
+            { text: "There is no greater agony than bearing an untold story inside you.", author: "Maya Angelou" },
+            { text: "Pain is temporary. Quitting lasts forever.", author: "Lance Armstrong" },
+            { text: "Happiness is not something ready-made. It comes from your own actions.", author: "Dalai Lama" },
+            { text: "What we think, we become.", author: "Buddha" },
+            { text: "Be yourself; everyone else is already taken.", author: "Oscar Wilde" },
+            { text: "The journey of a thousand miles begins with one step.", author: "Lao Tzu" },
+            { text: "Yesterday is history, tomorrow is a mystery, today is a gift of God, which is why we call it the present.", author: "Bill Keane" },
+            { text: "The only person you are destined to become is the person you decide to be.", author: "Ralph Waldo Emerson" },
+            { text: "Go confidently in the direction of your dreams. Live the life you have imagined.", author: "Henry David Thoreau" },
+            { text: "When I was 5 years old, my mother always told me that happiness was the key to life. When I went to school, they asked me what I wanted to be when I grew up. I wrote down 'happy'. They told me I didn't understand the assignment, and I told them they didn't understand life.", author: "John Lennon" },
+            { text: "We become what we think about.", author: "Earl Nightingale" },
+            { text: "People who are crazy enough to think they can change the world, are the ones who do.", author: "Rob Siltanen" },
+            { text: "First, have a definite, clear practical ideal; a goal, an objective. Second, have the necessary means to achieve your ends; wisdom, money, materials, and methods. Third, adjust all your means to that end.", author: "Aristotle" },
+            { text: "If you're offered a seat on a rocket ship, don't ask what seat! Just get on.", author: "Sheryl Sandberg" },
+            { text: "I'd rather attempt to do something great and fail than to attempt to do nothing and succeed.", author: "Robert H. Schuller" },
+            { text: "Everything has beauty, but not everyone can see.", author: "Confucius" },
+            { text: "Keep your face always toward the sunshine—and shadows will fall behind you.", author: "Walt Whitman" },
+            { text: "The most difficult thing is the decision to act, the rest is merely tenacity.", author: "Amelia Earhart" },
+            { text: "It is during our darkest moments that we must focus to see the light.", author: "Aristotle" },
+            { text: "Don't count the days, make the days count.", author: "Muhammad Ali" },
+            { text: "The only limit to our realization of tomorrow will be our doubts of today.", author: "Franklin D. Roosevelt" },
+            { text: "Never let the fear of striking out keep you from playing the game.", author: "Babe Ruth" },
+            { text: "Life shrinks or expands in proportion to one's courage.", author: "Anais Nin" },
+            { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
+            { text: "The man who has confidence in himself gains the confidence of others.", author: "Hasidic Proverb" },
+            { text: "Creativity is intelligence having fun.", author: "Albert Einstein" },
+            { text: "What you lack in talent can be made up with desire, hustle and giving 110% all the time.", author: "Don Zimmer" },
+            { text: "Today's accomplishments were yesterday's impossibilities.", author: "Robert H. Schuller" },
+            { text: "The difference between winning and losing is most often not quitting.", author: "Walt Disney" },
+            { text: "Fall seven times and stand up eight.", author: "Japanese Proverb" },
+            { text: "The successful warrior is the average man, with laser-like focus.", author: "Bruce Lee" },
+            { text: "If you want to lift yourself up, lift up someone else.", author: "Booker T. Washington" },
+            { text: "You are never too old to set another goal or to dream a new dream.", author: "C.S. Lewis" },
+            { text: "Small daily improvements are the key to staggering long-term results.", author: "Anonymous" },
+            { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+            { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" },
+            { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
+            { text: "Definiteness of purpose is the starting point of all achievement.", author: "W. Clement Stone" },
+            { text: "Life isn't about finding yourself. Life is about creating yourself.", author: "George Bernard Shaw" },
+            { text: "If you are not willing to risk the usual, you will have to settle for the ordinary.", author: "Jim Rohn" },
+            { text: "Learn from yesterday, live for today, hope for tomorrow.", author: "Albert Einstein" },
+            { text: "A person who never made a mistake never tried anything new.", author: "Albert Einstein" },
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "If you can dream it, you can achieve it.", author: "Zig Ziglar" },
+            { text: "You miss 100% of the shots you don't take.", author: "Wayne Gretzky" },
+            { text: "The most common way people give up their power is by thinking they don't have any.", author: "Alice Walker" },
+            { text: "The only thing standing between you and your goal is the story you keep telling yourself as to why you can't achieve it.", author: "Jordan Belfort" },
+            { text: "I have learned over the years that when one's mind is made up, this diminishes fear.", author: "Rosa Parks" },
+            { text: "It always seems impossible until it's done.", author: "Nelson Mandela" }
+        ];
+
+        // DOM elements
+        const quoteTextElement = document.getElementById('quote-text');
+        const quoteAuthorElement = document.getElementById('quote-author');
+        const newQuoteButton = document.getElementById('new-quote');
+        const copyQuoteButton = document.getElementById('copy-quote');
+        const copyFeedback = document.getElementById('copy-feedback');
+
+        // Track current quote
+        let currentQuote = {};
+
+        // Function to get a random quote
+        function getRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            return quotes[randomIndex];
+        }
+
+        // Function to display a quote
+        function displayQuote() {
+            currentQuote = getRandomQuote();
+            quoteTextElement.textContent = `"${currentQuote.text}"`;
+            quoteAuthorElement.textContent = currentQuote.author ? `- ${currentQuote.author}` : '';
+        }
+
+        // Function to copy quote to clipboard
+        function copyToClipboard() {
+            const textToCopy = `"${currentQuote.text}" - ${currentQuote.author}`;
+            
+            // Using the Clipboard API
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Show feedback
+                copyFeedback.classList.add('show');
+                setTimeout(() => {
+                    copyFeedback.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                
+                // Fallback method for older browsers or LDPlayer if needed
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = 0;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        copyFeedback.classList.add('show');
+                        setTimeout(() => {
+                            copyFeedback.classList.remove('show');
+                        }, 2000);
+                    }
+                } catch (err) {
+                    console.error('Fallback: Could not copy text: ', err);
+                }
+                
+                document.body.removeChild(textArea);
+            });
+        }
+
+        // Event listeners
+        newQuoteButton.addEventListener('click', displayQuote);
+        copyQuoteButton.addEventListener('click', copyToClipboard);
+
+        // Display a quote when the page loads
+        displayQuote();
+    </script>
+</body>
+</html>
